@@ -21,25 +21,26 @@ namespace UnderstandingRRTs
     }
     public class RRT
     {
-        int c1;
-        int c2;
-
+        Coord start;
         int[,] selected;
         List<Coord> seen;
         Random random = new Random();
         int width;
         int height;
         List<Tuple<Coord, Coord>> edges = new List<Tuple<Coord, Coord>>();
-        public Tuple<Coord, Coord> mostRecentEdge;
-        public bool[,] obsitcleMap;
+
         IMetric metric = new EuclideanDistanceMetric();
         int speed = 10;
         int turnSpeed = 2;
         double maxTurn;
 
+        public Tuple<Coord, Coord> mostRecentEdge;
+        public int[,] obsitcleMap;
+        public bool found = false;
 
         public RRT(int width, int height, Coord start)
         {
+            this.start = start;
             maxTurn = speed * turnSpeed *  Math.PI / 180;
             this.width = width;
             this.height = height;
@@ -106,10 +107,32 @@ namespace UnderstandingRRTs
             Coord newCoord = InDirection(nearest, randomCoord, speed);
             if (Clear(nearest, newCoord) && newCoord.x != -1)
             {
+                if (Goal(nearest, newCoord)) { found = true; }
                 seen.Add(newCoord);
                 edges.Add(new Tuple<Coord, Coord>(nearest, newCoord));
                 mostRecentEdge = new Tuple<Coord, Coord>(nearest, newCoord);
             }
+
+        }
+
+        public List<Coord> GetReversed(Coord endPoint)
+        {
+            List<Coord> reversedList = new List<Coord>() { endPoint };
+            Coord here = endPoint;
+            while (here.x != start.x || here.y != start.y)
+            {
+                foreach (Tuple<Coord, Coord> edge in edges)
+                {
+                    if (here.x == edge.Item2.x && here.y == edge.Item2.y)
+                    {
+                        here = edge.Item1;
+                        reversedList.Add(here);
+                        break;
+                    }
+                }
+
+            }
+            return reversedList;
 
         }
 
@@ -135,14 +158,6 @@ namespace UnderstandingRRTs
                     besti = i;
                 }
             }
-            if (besti == -1)
-            {
-                c1++;
-            }
-            else if (besti == 1)
-            {
-                c2++;
-            }
             return bestMove;
         }
         private bool Clear(Coord coord1, Coord coord2)
@@ -155,13 +170,29 @@ namespace UnderstandingRRTs
                 currentPos = coord1 + change * i;
                 Coord integerCoord = currentPos;
                 if (integerCoord.x >= 500 || integerCoord.x < 0 || integerCoord.y >= 500 || integerCoord.y < 0) { return false; }
-                bool x = obsitcleMap[integerCoord.x, integerCoord.y];
+                bool x = (obsitcleMap[integerCoord.x, integerCoord.y] == -1);
                 if (x == true) { return false; }
             }
             return true;
 
         }
 
+        private bool Goal(Coord coord1, Coord coord2)
+        {
+            CoordD currentPos = coord1;
+            CoordD change = new CoordD(coord2.x - coord1.x, coord2.y - coord1.y) / GetDistance(coord1, coord2);
+
+            for (int i = 0; i <= GetDistance(coord1, coord2); i++)
+            {
+                currentPos = coord1 + change * i;
+                Coord integerCoord = currentPos;
+                if (integerCoord.x >= 500 || integerCoord.x < 0 || integerCoord.y >= 500 || integerCoord.y < 0) { return false; }
+                bool x = (obsitcleMap[integerCoord.x, integerCoord.y] == 1);
+                if (x == true) { return true; }
+            }
+            return false;
+
+        }
 
     }
 }

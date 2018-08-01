@@ -33,7 +33,7 @@ namespace UnderstandingRRTs
 
         private void b_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            DrawLine(from, to);
+            DrawLine(from, to, Color.Gray);
             pictureBox1.Image = bmp; 
         }
 
@@ -42,16 +42,27 @@ namespace UnderstandingRRTs
             int i = 0;
             while (i < 10000)
             {
+                if (rrt.found == true)
+                {
+                    List<Coord> path = rrt.GetReversed(rrt.mostRecentEdge.Item2);
+                    SetMap();
+                    for (int j = 0; j < path.Count -1; j++)
+                    {
+                        DrawLine(path[j], path[j + 1], Color.Green);
+                    }
+                    b.ReportProgress(100);
+                    break;
+                }
                 i++;
                 rrt.RunIteration();
                 from = rrt.mostRecentEdge.Item1;
                 to = rrt.mostRecentEdge.Item2;
                 b.ReportProgress(i);
-                Thread.Sleep(10);
+                Thread.Sleep(5);
             }
         }
 
-        public void DrawLine(Coord from, Coord to)
+        public void DrawLine(Coord from, Coord to, Color color)
         {
             if ((0 < from.x && from.x < 500 && 0 < from.y && from.y < 500) && (0 < to.x && to.x < 500 && 0 < to.y && to.y < 500))
             {
@@ -65,7 +76,7 @@ namespace UnderstandingRRTs
                     {
                         x = from.x + (int)(xStep * i);
                         y = from.y + (int)(yStep * i);
-                        g.DrawEllipse(new Pen(Color.Black), x, y, 1f, 1f);
+                        bmp.SetPixel(x, y, color);
                     }
                 }
             }
@@ -73,12 +84,14 @@ namespace UnderstandingRRTs
 
         private void SetMap()
         {
-            bool[,] obsticles = rrt.obsitcleMap;
+            int[,] obsticles = rrt.obsitcleMap;
             for (int i =0; i < bmp.Width; i++)
             {
                 for (int j =0; j < bmp.Height; j++)
                 {
-                    if (obsticles[i, j]) { bmp.SetPixel(i, j, Color.Red); }
+                    if (obsticles[i, j] == -1) { bmp.SetPixel(i, j, Color.Red); }
+                    else if (obsticles[i, j] == 1) { bmp.SetPixel(i, j, Color.Green); }
+                    else { bmp.SetPixel(i, j, Color.White); }
                 }
             }
         }

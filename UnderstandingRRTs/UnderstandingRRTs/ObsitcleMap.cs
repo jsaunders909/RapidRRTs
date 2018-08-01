@@ -11,24 +11,24 @@ namespace UnderstandingRRTs
         public int width { get; set; }
         public int length { get; set; }
 
-        public bool[,] obsticles;
+        public int[,] obsticles;
 
         public ObsitcleMap(int width, int length)
         {
             this.width = width;
             this.length = length;
             SetAllClear();
-            MakeObsticles();
+            MakeMap();
         }
 
         private void SetAllClear()
         {
-            obsticles = new bool[width, length];
+            obsticles = new int[width, length];
             for (int i =0; i < width; i++)
             {
                 for (int j =0; j < length; j++)
                 {
-                    obsticles[i, j] = false;
+                    obsticles[i, j] = 0;
                 }
             }
         }
@@ -39,19 +39,29 @@ namespace UnderstandingRRTs
             {
                 for (int j= minY; j < maxY; j++)
                 {
-                    obsticles[i, j] = true;
+                    obsticles[i, j] = -1;
                 }
             }
         }
 
-        private void MakeObsticles()
+        private void MakeGoal(int minX, int maxX, int minY, int maxY)
         {
-            MakeObsticle(0, 50, 400, 405);
-            MakeObsticle(100, 500, 400, 405);
-            MakeObsticle(100, 150, 100, 105);
-            MakeObsticle(200, 500, 100, 105);
-            MakeObsticle(100, 105, 300, 305);
-            MakeObsticle(300, 500, 200, 205);
+            for (int i = minX; i < maxX; i++)
+            {
+                for (int j = minY; j < maxY; j++)
+                {
+                    obsticles[i, j] = 1;
+                }
+            }
+        }
+
+        private void MakeMap()
+        {
+            MakeObsticle(0, 100, 400, 405);
+            MakeObsticle(150, 500, 400, 405);
+            MakeObsticle(0, 300, 300, 305);
+            MakeObsticle(350, 500, 300, 305);
+            MakeGoal(450, 500, 405, 500);
         }
     }
 }
